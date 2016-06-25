@@ -22,11 +22,12 @@ class StateList
 
     public function processCheckResult($result)
     {
+        // Hint: ->type is not always available, check this:
         $type = $result->type;
         $types = array(
             'CheckResult'            => 'check_result',
             'StateChange'            => 'check_result',
-            'Notification',
+            'Notification'           => null,
             'AcknowledgementSet'     => null,
             'AcknowledgementCleared' => null,
             'CommentAdded'           => 'comment',
