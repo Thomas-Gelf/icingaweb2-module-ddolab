@@ -1,6 +1,6 @@
 <?php
 
-namespace Icinga\Module\Director\Ddo;
+namespace Icinga\Module\Ddolab;
 
 class StateList
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Icinga\Module\Director\Ddo;
+namespace Icinga\Module\Ddolab;
 
 if (version_compare(PHP_VERSION, '5.4.0') <= 0) {
     function hex2bin($hex) {

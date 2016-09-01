@@ -1,17 +1,19 @@
 <?php
 
-namespace Icinga\Module\Director\Ddo;
+namespace Icinga\Module\Ddolab;
 
-class HostState extends StateObject
+class ServiceState extends StateObject
 {
-    protected $table = 'host_state';
+    protected $table = 'service_state';
 
     protected $keyName = 'checksum';
 
     protected $defaultProperties = array(
         // active ?
         'checksum'              => null,
+        // 'host_checksum'         => null,
         'host'                  => null,
+        'service'               => null,
         'state'                 => null,
         'hard_state'            => null,
         'state_type'            => null,
@@ -39,8 +41,17 @@ class HostState extends StateObject
         'last_state_change',
     );
 
+    protected function calculateSeverity()
+    {
+        $sev = parent::calculateSeverity();
+
+        // TODO: add host state to the mix
+
+        return $sev;
+    }
+
     protected function getSortingState()
     {
-        return self::$hostStateSortMap[$this->state];
+        return self::$serviceStateSortMap[$this->state];
     }
 }
