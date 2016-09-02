@@ -32,6 +32,7 @@ abstract class DdoObject extends DbObject
         if (method_exists($this, $setter)) {
             return $this->$setter($value);
         }
+
         return parent::set($key, $value);
     }
 
@@ -66,26 +67,9 @@ abstract class DdoObject extends DbObject
         }
     }
 
-    public function merge(DdoObject $other)
+    public function replaceWith(DdoObject $other)
     {
-        $this->hasBeenModified = false;
-        $this->loadedFromDb = true;
-
-        // TODO(el): Evaluate why the array_diff is necessary
-        $this->setProperties(
-            array_diff($this->getProperties(), array_merge($other->getProperties(), $this->getProperties()))
-        );
-    }
-
-    public function afterSetProperties()
-    {
-
-    }
-
-    public function setProperties($props)
-    {
-        $return = parent::setProperties($props);
-        $this->afterSetProperties();
-        return $return;
+        $this->setProperties($other->getProperties());
+        return $this;
     }
 }
