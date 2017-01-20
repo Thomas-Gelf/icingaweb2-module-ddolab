@@ -2,7 +2,7 @@
 
 namespace Icinga\Module\Ddolab;
 
-use Icinga\Data\Db\DbConnection;
+use Icinga\Module\Director\Data\Db\DbConnection;
 
 class DdoDb extends DbConnection
 {

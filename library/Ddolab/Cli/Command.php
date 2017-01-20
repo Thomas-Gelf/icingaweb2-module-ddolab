@@ -8,8 +8,10 @@ use Icinga\Module\Director\Cli\Command as DirectorCommand;
 
 class Command extends DirectorCommand
 {
+    /** @var DdoDb */
     private $ddo;
 
+    /** @var Redis */
     private $redis;
 
     /**
@@ -24,6 +26,9 @@ class Command extends DirectorCommand
         return $this->redis;
     }
 
+    /**
+     * @return DdoDb
+     */
     protected function ddo()
     {
         if ($this->ddo === null) {

@@ -2,7 +2,9 @@
 
 namespace Icinga\Module\Ddolab;
 
-use Icinga\Module\Ddolab\Redis;
+use Icinga\Module\Director\Core\CoreApi;
+use Icinga\Application\Logger;
+use Exception;
 
 class IcingaEventToRedisStreamer
 {
@@ -15,14 +17,14 @@ class IcingaEventToRedisStreamer
         $this->api = $api;
     }
 
-    public function streamAction()
+    public function stream()
     {
         $attempts = 0;
         while (true) {
             try {
                 $lastAttempt = time();
                 $attempts++;
-                $this->api->onEvent(array($this, 'enqueueEvent'))->stream();
+                $this->api->onEvent(array($this, 'enqueueEvent'), true)->stream();
             } catch (Exception $e) {
                 Logger::error($e->getMessage());
             }
@@ -40,11 +42,11 @@ class IcingaEventToRedisStreamer
     }
 
     // Must be accessible from outside, as this is a callback
-    public function enqueueEvent($event)
+    public function enqueueEvent(& $event)
     {
         while (true) {
             try {
-                $id = $this->redis()->lpush('icinga2::events', json_encode($event));
+                $id = $this->redis()->lpush('icinga2::events', $event);
                 Logger::debug('(ddolab) Stored id %d', $id);
                 return;
             } catch (Exception $e) {
@@ -58,6 +60,13 @@ class IcingaEventToRedisStreamer
         }
     }
 
+    protected function clearConnections()
+    {
+        unset($this->redis);
+        // Really?
+        // unset($this->api);
+    }
+
     protected function redis()
     {
         if ($this->redis === null) {
@@ -69,7 +78,6 @@ class IcingaEventToRedisStreamer
 
     public function __destruct()
     {
-        unset($this->redis);
-        unset($this->api);
+        $this->clearConnections();
     }
 }

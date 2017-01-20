@@ -2,19 +2,35 @@
 
 namespace Icinga\Module\Ddolab;
 
-use Icinga\Module\Ddolab\DdoDb;
-use Icinga\Module\Ddolab\Redis;
-use Icinga\Module\Ddolab\StateList;
+use Icinga\Application\Logger;
+use Icinga\Module\Director\Core\CoreApi;
 
 class IcingaEventHandler
 {
+    /** @var \Predis\Client */
     protected $redis;
 
+    /** @var CoreApi */
     protected $api;
 
-    public function __construct(DdoDb $db)
+    /** @var DdoDb */
+    protected $ddo;
+
+    /** @var \Zend_Db_Adapter_Abstract */
+    protected $db;
+
+    protected $hasTransaction = false;
+
+    protected $useTransactions = true;
+
+    /**
+     * IcingaEventHandler constructor.
+     * @param DdoDb $ddo
+     */
+    public function __construct(DdoDb $ddo)
     {
-        $this->db = $db;
+        $this->ddo = $ddo;
+        $this->db = $ddo->getDbAdapter();
     }
 
     public function processEvents()
@@ -22,9 +38,8 @@ class IcingaEventHandler
         $time = time();
         $cnt = 0;
         $cntEvents = 0;
-        $hasTransaction = false;
-        $ddo = $this->ddo();
-        $db = $ddo->getDbAdapter();
+        $ddo = $this->ddo;
+        $db = $this->db;
         $list = new StateList($ddo);
 
         // TODO: 0 is forever, leave loop after a few sec and enter again
@@ -33,7 +48,7 @@ class IcingaEventHandler
 
             while ($res = $redis->brpop('icinga2::events', 1)) {
                 $cntEvents++;
-                // res = array(queuename, value)
+                // Hint: $res = array(queuename, value)
                 $object = $list->processCheckResult(json_decode($res[1]));
                 if ($object === false) {
                     continue;
@@ -41,87 +56,54 @@ class IcingaEventHandler
 
                 if ($object->hasBeenModified() && $object->state !== null) {
                     Logger::info('(ddolab) %s has been modified', $object->getUniqueName());
-
-                    if (! $hasTransaction) {
-                        $db->beginTransaction();
-                        $hasTransaction = true;
-                    }
+                    $this->wantsTransaction();
                     $cnt++;
                     $object->store();
                 } else {
                     Logger::debug('(ddolab) %s has not been modified', $object->getUniqueName());
                 }
 
-                if (($cnt >= 1000)
+                if (($cnt >= 1000 && $newtime = time())
                     || ($cnt > 0 && (($newtime = time()) - $time > 1))
                 ) {
                     $time = $newtime;
                     Logger::info('(ddolab) Committing %d events (%d total)', $cnt, $cntEvents);
                     $cnt = 0;
                     $cntEvents = 0;
-                    $db->commit();
-                    $hasTransaction = false;
+                    $this->closeTransaction();
                 }
             }
-
-            // printf("%s: %d events\n", date("H:i:s"), $cntEvents);
-            // echo "Got nothing for 1secs\n";
 
             if ($cnt > 0) {
                 $time = time();
                 Logger::info('(ddolab) Committing %d events (%d total)', $cnt, $cntEvents);
                 $cnt = 0;
                 $cntEvents = 0;
-                $db->commit();
-                $hasTransaction = false;
+                $this->closeTransaction();
             }
         }
     }
 
-
-    public function streamAction()
+    protected function wantsTransaction()
     {
-        $attempts = 0;
-        while (true) {
-            try {
-                $lastAttempt = time();
-                $attempts++;
-                $this->api->onEvent(array($this, 'enqueueEvent'))->stream();
-            } catch (Exception $e) {
-                Logger::error($e->getMessage());
-            }
-
-            $this->clearConnections();
-            if ($attempts > 5) {
-                Logger::info('(ddolab) Waiting 5 seconds for reconnect');
-                $attempts = 0;
-                sleep(5);
-            } else {
-                usleep(100000);
-                Logger::info('(ddolab) Trying to reconnect');
-            }
+        if ($this->useTransactions && ! $this->hasTransaction) {
+            $this->db->beginTransaction();
+            $this->hasTransaction = true;
         }
     }
 
-    // Must be accessible from outside, as this is a callback
-    public function enqueueEvent($event)
+    protected function closeTransaction()
     {
-        while (true) {
-            try {
-                $id = $this->redis()->lpush('icinga2::events', json_encode($event));
-                Logger::debug('(ddolab) Stored id %d', $id);
-                return;
-            } catch (Exception $e) {
-                Logger::error(
-                    '(ddolab) Could not enqueue event to redis, will retry: %s',
-                    $e->getMessage()
-                );
-                $this->redis = null;
-                sleep(5);
-            }
+        if ($this->hasTransaction) {
+            // TODO: try, rollback
+            $this->db->commit();
+            $this->hasTransaction = false;
         }
     }
 
+    /**
+     * @return \Predis\Client
+     */
     protected function redis()
     {
         if ($this->redis === null) {
@@ -135,5 +117,7 @@ class IcingaEventHandler
     {
         unset($this->redis);
         unset($this->api);
+        unset($this->db);
+        unset($this->ddo);
     }
 }

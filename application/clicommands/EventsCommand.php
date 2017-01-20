@@ -2,7 +2,6 @@
 
 namespace Icinga\Module\Ddolab\Clicommands;
 
-use Exception;
 use Icinga\Application\Logger;
 use Icinga\Module\Ddolab\Cli\Command;
 use Icinga\Module\Ddolab\IcingaEventHandler;
@@ -12,7 +11,8 @@ class EventsCommand extends Command
 {
     public function processAction()
     {
-        $handler = new IcingaEventHandler();
+        $handler = new IcingaEventHandler($this->ddo());
+        $handler->processEvents();
     }
 
     public function streamAction()
