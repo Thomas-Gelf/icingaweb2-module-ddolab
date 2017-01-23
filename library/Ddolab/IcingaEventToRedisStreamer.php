@@ -62,7 +62,7 @@ class IcingaEventToRedisStreamer
 
     protected function clearConnections()
     {
-        unset($this->redis);
+        $this->redis = null;
         // Really?
         // unset($this->api);
     }
