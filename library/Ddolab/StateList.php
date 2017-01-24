@@ -2,6 +2,8 @@
 
 namespace Icinga\Module\Ddolab;
 
+use Icinga\Exception\MissingParameterException;
+
 class StateList
 {
     protected $connection;
@@ -23,6 +25,11 @@ class StateList
     public function processCheckResult($result)
     {
         // Hint: ->type is not always available, check this:
+        if (! property_exists($result, 'type')) {
+            var_dump($result);
+            throw new MissingParameterException('Got no type');
+        }
+
         $type = $result->type;
         $types = array(
             'CheckResult'            => 'check_result',
@@ -40,7 +47,7 @@ class StateList
         if (! array_key_exists($type, $types)) {
             var_dump($type);
             var_dump($result);
-            die('Type incomplete');
+            throw new MissingParameterException('Type list incomplete, missing %s');
         }
 
         $eventProperty = $types[$type];
