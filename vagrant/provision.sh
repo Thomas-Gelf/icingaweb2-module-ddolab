@@ -41,7 +41,7 @@ dpkg -s lxc >/dev/null 2>&1 || apt-get install -y lxc lxc-templates
 if [ ! -d /var/lib/lxc/mysql1.example.com ]; then
     lxc-create -n mysql1.example.com -t ubuntu -- --release=xenial
     lxc-start -n mysql1.example.com -d
-    echo "Purging resolvconf..."
+    echo "Removing resolvconf..."
     cp -a /vagrant/vagrant/lxc/remove-resolvconf.sh /var/lib/lxc/mysql1.example.com/rootfs/tmp/
     lxc-attach -n mysql1.example.com -- /tmp/remove-resolvconf.sh
     echo "Installing MySQL server..."
@@ -54,7 +54,7 @@ fi
 if [ ! -d /var/lib/lxc/redis1.example.com ]; then
     lxc-create -n redis1.example.com -t ubuntu -- --release=xenial
     lxc-start -n redis1.example.com -d
-    echo "Purging resolvconf..."
+    echo "Removing resolvconf..."
     cp -a /vagrant/vagrant/lxc/remove-resolvconf.sh /var/lib/lxc/redis1.example.com/rootfs/tmp/
     lxc-attach -n redis1.example.com -- /tmp/remove-resolvconf.sh
     echo "Installing redis server..."
@@ -62,4 +62,17 @@ if [ ! -d /var/lib/lxc/redis1.example.com ]; then
     lxc-attach -n redis1.example.com -- /tmp/provision-redis.sh
     echo "Installing unit file..."
     unitfile "redis1.example.com" "enable"
+fi
+
+if [ ! -d /var/lib/lxc/icinga1.example.com ]; then
+    lxc-create -n icinga1.example.com -t ubuntu -- --release=xenial
+    lxc-start -n icinga1.example.com -d
+    echo "Removing resolvconf..."
+    cp -a /vagrant/vagrant/lxc/remove-resolvconf.sh /var/lib/lxc/icinga1.example.com/rootfs/tmp/
+    lxc-attach -n icinga1.example.com -- /tmp/remove-resolvconf.sh
+    echo "Installing Icinga server..."
+    cp -a /vagrant/vagrant/lxc/provision-icinga.sh /var/lib/lxc/icinga1.example.com/rootfs/tmp/
+    lxc-attach -n icinga1.example.com -- /tmp/provision-icinga.sh
+    echo "Installing unit file..."
+    unitfile "icinga1.example.com" "enable"
 fi
