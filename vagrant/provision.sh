@@ -31,16 +31,22 @@ EOF
 
 grep us.archive /etc/apt/sources.list >/dev/null && sed -i 's/us\.archive/de.archive/' /etc/apt/sources.list
 
+export DEBIAN_FRONTEND="noninteractive"
+
 apt-get update
-DEBIAN_FRONTEND="noninteractive" apt-get dist-upgrade -y
+apt-get dist-upgrade -y
 
 dpkg -s lxc >/dev/null 2>&1 || apt-get install -y lxc lxc-templates
 
 if [ ! -d /var/lib/lxc/mysql1.example.com ]; then
     lxc-create -n mysql1.example.com -t ubuntu -- --release=xenial
-    cp -a /vagrant/vagrant/lxc/provision-mysql.sh /var/lib/lxc/mysql1.example.com/rootfs/tmp/
-    cp -a /etc/apt/sources.list /var/lib/lxc/mysql1.example.com/rootfs/etc/apt/
     lxc-start -n mysql1.example.com -d
+    echo "Purging resolvconf..."
+    cp -a /vagrant/vagrant/lxc/remove-resolvconf.sh /var/lib/lxc/mysql1.example.com/rootfs/tmp/
+    lxc-attach -n mysql1.example.com -- /tmp/remove-resolvconf.sh
+    echo "Installing MySQL server..."
+    cp -a /vagrant/vagrant/lxc/provision-mysql.sh /var/lib/lxc/mysql1.example.com/rootfs/tmp/
     lxc-attach -n mysql1.example.com -- /tmp/provision-mysql.sh
+    echo "Installing unit file..."
     unitfile "mysql1.example.com" "enable"
 fi
