@@ -3,8 +3,10 @@
 namespace Icinga\Module\Ddolab\Web;
 
 use Icinga\Exception\ConfigurationError;
+use Icinga\Module\Businessprocess\Html\HtmlTag;
 use Icinga\Module\Businessprocess\Web\Component\Content;
 use Icinga\Module\Businessprocess\Web\Component\Controls;
+use Icinga\Module\Businessprocess\Web\Component\Tabs;
 use Icinga\Module\Ddolab\DdoDb;
 use Icinga\Web\Controller as WebController;
 
@@ -15,6 +17,8 @@ class Controller extends WebController
 
     /** @var DdoDb */
     private $ddo;
+
+    private $mytabs;
 
     public function init()
     {
@@ -40,6 +44,53 @@ class Controller extends WebController
         $this->_helper->viewRenderer->setNoController(true);
         $this->_helper->viewRenderer->setScriptAction($name);
         return $this;
+    }
+
+    protected function setTitle($title)
+    {
+        $args = func_get_args();
+        array_shift($args);
+        $this->view->title = vsprintf($title, $args);
+        return $this;
+    }
+
+    protected function addTitle($title)
+    {
+        $args = func_get_args();
+        array_shift($args);
+        $this->view->title = vsprintf($title, $args);
+        $this->controls()->add(HtmlTag::h1($this->view->title));
+        return $this;
+    }
+
+    /**
+     * @param $label
+     * @return Tabs
+     */
+    protected function singleTab($label)
+    {
+        return $this->tabs()->add(
+            'tab',
+            array(
+                'label' => $label,
+                'url'   => $this->getRequest()->getUrl()
+            )
+        )->activate('tab');
+    }
+
+    /**
+     * @return Tabs
+     */
+    protected function tabs()
+    {
+        // Todo: do not add to view once all of them render controls()
+        if ($this->mytabs === null) {
+            $tabs = new Tabs();
+            $this->controls()->prepend($tabs);
+            $this->mytabs = $tabs;
+        }
+
+        return $this->mytabs;
     }
 
     /**
