@@ -1,3 +1,20 @@
+--
+-- MySQL schema
+-- ============
+--
+-- You should normally not be required to care about schema handling.
+-- DDOlab does all the migrations for you and guides you either in
+-- the frontend or provides everything you need for automated migration
+-- handling. Please find more related information in our documentation.
+
+SET sql_mode = 'STRICT_ALL_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION,PIPES_AS_CONCAT,ANSI_QUOTES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER';
+
+CREATE TABLE ddolab_schema_migration (
+  schema_version SMALLINT UNSIGNED NOT NULL,
+  migration_time DATETIME NOT NULL,
+  PRIMARY KEY(schema_version)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 CREATE TABLE host_state (
   checksum VARBINARY(20) NOT NULL, -- sha1(hostname)
   host VARCHAR(255) NOT NULL,
@@ -119,3 +136,7 @@ CREATE TABLE ddo_host_note (
   note_checksum varbinary(20) NOT NULL,
   PRIMARY KEY (host_checksum, note_checksum)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO ddolab_schema_migration
+  (schema_version, migration_time)
+  VALUES (3, NOW());
