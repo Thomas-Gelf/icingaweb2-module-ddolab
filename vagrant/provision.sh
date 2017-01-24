@@ -50,3 +50,16 @@ if [ ! -d /var/lib/lxc/mysql1.example.com ]; then
     echo "Installing unit file..."
     unitfile "mysql1.example.com" "enable"
 fi
+
+if [ ! -d /var/lib/lxc/redis1.example.com ]; then
+    lxc-create -n redis1.example.com -t ubuntu -- --release=xenial
+    lxc-start -n redis1.example.com -d
+    echo "Purging resolvconf..."
+    cp -a /vagrant/vagrant/lxc/remove-resolvconf.sh /var/lib/lxc/redis1.example.com/rootfs/tmp/
+    lxc-attach -n redis1.example.com -- /tmp/remove-resolvconf.sh
+    echo "Installing redis server..."
+    cp -a /vagrant/vagrant/lxc/provision-redis.sh /var/lib/lxc/redis1.example.com/rootfs/tmp/
+    lxc-attach -n redis1.example.com -- /tmp/provision-redis.sh
+    echo "Installing unit file..."
+    unitfile "redis1.example.com" "enable"
+fi
