@@ -55,12 +55,12 @@ class IcingaEventHandler
                 }
 
                 if ($object->hasBeenModified() && $object->state !== null) {
-                    Logger::info('(ddolab) %s has been modified', $object->getUniqueName());
+                    // Logger::info('(ddolab) "%s" has been modified', $object->getUniqueName());
                     $this->wantsTransaction();
                     $cnt++;
                     $object->store();
                 } else {
-                    Logger::debug('(ddolab) %s has not been modified', $object->getUniqueName());
+                    // Logger::debug('(ddolab) "%s" has not been modified', $object->getUniqueName());
                 }
 
                 if (($cnt >= 1000 && $newtime = time())
