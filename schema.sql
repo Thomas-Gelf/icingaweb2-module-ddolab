@@ -74,3 +74,15 @@ CREATE TABLE ddo_host_group_member (
     ON DELETE CASCADE
     ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE ddo_note (
+  checksum varbinary(20) NOT NULL COMMENT 'sha1(content)',
+  content text NOT NULL,
+  PRIMARY KEY (`checksum`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE ddo_host_note (
+  host_checksum varbinary(20) NOT NULL,
+  note_checksum varbinary(20) NOT NULL,
+  PRIMARY KEY (host_checksum, note_checksum)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
