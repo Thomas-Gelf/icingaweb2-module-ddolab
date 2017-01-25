@@ -41,6 +41,7 @@ dpkg -s lxc >/dev/null 2>&1 || apt-get install -y lxc lxc-templates
 if [ ! -d /var/lib/lxc/mysql1.example.com ]; then
     lxc-create -n mysql1.example.com -t ubuntu -- --release=xenial
     lxc-start -n mysql1.example.com -d
+    lxc-wait -n mysql1.example.com --state=RUNNING
     echo "Removing resolvconf..."
     cp -a /vagrant/vagrant/lxc/remove-resolvconf.sh /var/lib/lxc/mysql1.example.com/rootfs/tmp/
     lxc-attach -n mysql1.example.com -- /tmp/remove-resolvconf.sh
@@ -54,6 +55,7 @@ fi
 if [ ! -d /var/lib/lxc/redis1.example.com ]; then
     lxc-create -n redis1.example.com -t ubuntu -- --release=xenial
     lxc-start -n redis1.example.com -d
+    lxc-wait -n redis1.example.com --state=RUNNING
     echo "Removing resolvconf..."
     cp -a /vagrant/vagrant/lxc/remove-resolvconf.sh /var/lib/lxc/redis1.example.com/rootfs/tmp/
     lxc-attach -n redis1.example.com -- /tmp/remove-resolvconf.sh
@@ -67,6 +69,7 @@ fi
 if [ ! -d /var/lib/lxc/icinga1.example.com ]; then
     lxc-create -n icinga1.example.com -t ubuntu -- --release=xenial
     lxc-start -n icinga1.example.com -d
+    lxc-wait -n mysql1.example.com --state=RUNNING
     echo "Removing resolvconf..."
     cp -a /vagrant/vagrant/lxc/remove-resolvconf.sh /var/lib/lxc/icinga1.example.com/rootfs/tmp/
     lxc-attach -n icinga1.example.com -- /tmp/remove-resolvconf.sh
