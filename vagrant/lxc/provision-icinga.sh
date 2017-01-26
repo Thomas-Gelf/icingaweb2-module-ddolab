@@ -16,7 +16,7 @@ EOF
 
 apt-get update
 
-dpkg -s icinga2-bin >/dev/null 2>&1 || apt-get install -y icinga2-bin icinga2-ido-mysql
+apt-get install -y icinga2-bin icinga2-ido-mysql
 
 icinga2 api setup
 
