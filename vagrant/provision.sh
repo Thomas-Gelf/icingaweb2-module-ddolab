@@ -38,44 +38,49 @@ apt-get dist-upgrade -y
 
 dpkg -s lxc >/dev/null 2>&1 || apt-get install -y lxc lxc-templates
 
-if [ ! -d /var/lib/lxc/mysql1.example.com ]; then
-    lxc-create -n mysql1.example.com -t ubuntu -- --release=xenial
-    lxc-start -n mysql1.example.com -d
-    lxc-wait -n mysql1.example.com --state=RUNNING
+sed -i -e 's/^#\(LXC_DOMAIN=\).*$/\1lxc/' /etc/default/lxc-net
+grep -q 10.0.3.1 /etc/resolvconf/resolv.conf.d/head || echo 'nameserver 10.0.3.1' >> /etc/resolvconf/resolv.conf.d/head
+systemctl restart lxc-net.service
+resolvconf -u
+
+if [ ! -d /var/lib/lxc/mysql1.lxc ]; then
+    lxc-create -n mysql1.lxc -t ubuntu -- --release=xenial
+    lxc-start -n mysql1.lxc -d
+    lxc-wait -n mysql1.lxc --state=RUNNING
     echo "Removing resolvconf..."
-    cp -a /vagrant/vagrant/lxc/remove-resolvconf.sh /var/lib/lxc/mysql1.example.com/rootfs/tmp/
-    lxc-attach -n mysql1.example.com -- /tmp/remove-resolvconf.sh
+    cp -a /vagrant/vagrant/lxc/remove-resolvconf.sh /var/lib/lxc/mysql1.lxc/rootfs/tmp/
+    lxc-attach -n mysql1.lxc -- /tmp/remove-resolvconf.sh
     echo "Installing MySQL server..."
-    cp -a /vagrant/vagrant/lxc/provision-mysql.sh /var/lib/lxc/mysql1.example.com/rootfs/tmp/
-    lxc-attach -n mysql1.example.com -- /tmp/provision-mysql.sh
+    cp -a /vagrant/vagrant/lxc/provision-mysql.sh /var/lib/lxc/mysql1.lxc/rootfs/tmp/
+    lxc-attach -n mysql1.lxc -- /tmp/provision-mysql.sh
     echo "Installing unit file..."
-    unitfile "mysql1.example.com" "enable"
+    unitfile "mysql1.lxc" "enable"
 fi
 
-if [ ! -d /var/lib/lxc/redis1.example.com ]; then
-    lxc-create -n redis1.example.com -t ubuntu -- --release=xenial
-    lxc-start -n redis1.example.com -d
-    lxc-wait -n redis1.example.com --state=RUNNING
+if [ ! -d /var/lib/lxc/redis1.lxc ]; then
+    lxc-create -n redis1.lxc -t ubuntu -- --release=xenial
+    lxc-start -n redis1.lxc -d
+    lxc-wait -n redis1.lxc --state=RUNNING
     echo "Removing resolvconf..."
-    cp -a /vagrant/vagrant/lxc/remove-resolvconf.sh /var/lib/lxc/redis1.example.com/rootfs/tmp/
-    lxc-attach -n redis1.example.com -- /tmp/remove-resolvconf.sh
+    cp -a /vagrant/vagrant/lxc/remove-resolvconf.sh /var/lib/lxc/redis1.lxc/rootfs/tmp/
+    lxc-attach -n redis1.lxc -- /tmp/remove-resolvconf.sh
     echo "Installing redis server..."
-    cp -a /vagrant/vagrant/lxc/provision-redis.sh /var/lib/lxc/redis1.example.com/rootfs/tmp/
-    lxc-attach -n redis1.example.com -- /tmp/provision-redis.sh
+    cp -a /vagrant/vagrant/lxc/provision-redis.sh /var/lib/lxc/redis1.lxc/rootfs/tmp/
+    lxc-attach -n redis1.lxc -- /tmp/provision-redis.sh
     echo "Installing unit file..."
-    unitfile "redis1.example.com" "enable"
+    unitfile "redis1.lxc" "enable"
 fi
 
-if [ ! -d /var/lib/lxc/icinga1.example.com ]; then
-    lxc-create -n icinga1.example.com -t ubuntu -- --release=xenial
-    lxc-start -n icinga1.example.com -d
-    lxc-wait -n mysql1.example.com --state=RUNNING
+if [ ! -d /var/lib/lxc/icinga1.lxc ]; then
+    lxc-create -n icinga1.lxc -t ubuntu -- --release=xenial
+    lxc-start -n icinga1.lxc -d
+    lxc-wait -n mysql1.lxc --state=RUNNING
     echo "Removing resolvconf..."
-    cp -a /vagrant/vagrant/lxc/remove-resolvconf.sh /var/lib/lxc/icinga1.example.com/rootfs/tmp/
-    lxc-attach -n icinga1.example.com -- /tmp/remove-resolvconf.sh
+    cp -a /vagrant/vagrant/lxc/remove-resolvconf.sh /var/lib/lxc/icinga1.lxc/rootfs/tmp/
+    lxc-attach -n icinga1.lxc -- /tmp/remove-resolvconf.sh
     echo "Installing Icinga server..."
-    cp -a /vagrant/vagrant/lxc/provision-icinga.sh /var/lib/lxc/icinga1.example.com/rootfs/tmp/
-    lxc-attach -n icinga1.example.com -- /tmp/provision-icinga.sh
+    cp -a /vagrant/vagrant/lxc/provision-icinga.sh /var/lib/lxc/icinga1.lxc/rootfs/tmp/
+    lxc-attach -n icinga1.lxc -- /tmp/provision-icinga.sh
     echo "Installing unit file..."
-    unitfile "icinga1.example.com" "enable"
+    unitfile "icinga1.lxc" "enable"
 fi
