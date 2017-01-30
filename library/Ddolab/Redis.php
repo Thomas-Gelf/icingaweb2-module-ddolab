@@ -9,6 +9,10 @@ class Redis
 {
     protected static $redis;
 
+    /**
+     * @param bool $new
+     * @return PredisClient
+     */
     public static function instance($new = false)
     {
         if ($new || self::$redis === null) {
