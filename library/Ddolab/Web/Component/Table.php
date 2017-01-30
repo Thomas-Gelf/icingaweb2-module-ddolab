@@ -24,8 +24,6 @@ class Table extends BaseElement
     /** @var Element */
     private $footer;
 
-    private $repeatHeader;
-
     /**
      * Set the table title
      *
@@ -70,7 +68,7 @@ class Table extends BaseElement
 
     public function renderRow($row)
     {
-        $tr = Element::create('tr');
+        $tr = $this->addRowClasses(Element::create('tr'), $row);
         foreach ($this->getColumnsToBeRendered() as $column) {
             $td = Element::create('td');
             if (property_exists($row, $column)) {
@@ -80,6 +78,24 @@ class Table extends BaseElement
         }
 
         return $tr;
+    }
+
+    public function addRowClasses(Element $tr, $row)
+    {
+        $classes = $this->getRowClasses($row);
+        if (! empty($classes)) {
+            $tr->attributes()->add('class', $classes);
+        }
+
+        return $tr;
+    }
+
+    /**
+     * @return null|string|array
+     */
+    public function getRowClasses($row)
+    {
+        return null;
     }
 
     public function body()
