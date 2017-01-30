@@ -15,7 +15,7 @@ class Command extends DirectorCommand
     private $redis;
 
     /**
-     * @return Redis;
+     * @return \Predis\Client
      */
     protected function redis()
     {
