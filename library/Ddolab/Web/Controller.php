@@ -2,12 +2,16 @@
 
 namespace Icinga\Module\Ddolab\Web;
 
+use Icinga\Application\Config;
 use Icinga\Exception\ConfigurationError;
 use Icinga\Module\Businessprocess\Html\HtmlTag;
 use Icinga\Module\Businessprocess\Web\Component\Content;
 use Icinga\Module\Businessprocess\Web\Component\Controls;
 use Icinga\Module\Businessprocess\Web\Component\Tabs;
 use Icinga\Module\Ddolab\DdoDb;
+use Icinga\Module\Ddolab\Redis;
+use Icinga\Module\Director\Db;
+use Icinga\Module\Director\Objects\IcingaEndpoint;
 use Icinga\Web\Controller as WebController;
 
 class Controller extends WebController
@@ -18,7 +22,14 @@ class Controller extends WebController
     /** @var DdoDb */
     private $ddo;
 
+    /** @var Redis */
+    private $redis;
+
     private $mytabs;
+
+    private $directorDb;
+
+    private $api;
 
     public function init()
     {
@@ -115,6 +126,54 @@ class Controller extends WebController
         }
 
         return $this->db;
+    }
+
+    /**
+     * @return \Predis\Client;
+     */
+    protected function redis()
+    {
+        if ($this->redis === null) {
+            $this->redis = Redis::instance(true);
+        }
+
+        return $this->redis;
+    }
+
+    /**
+     * @param null $endpointName
+     * @return \Icinga\Module\Director\Core\CoreApi
+     */
+    protected function api($endpointName = null)
+    {
+        if ($this->api === null) {
+            if ($endpointName === null) {
+                $endpoint = $this->directorDb()->getDeploymentEndpoint();
+            } else {
+                $endpoint = IcingaEndpoint::load($endpointName, $this->db());
+            }
+
+            $this->api = $endpoint->api();
+        }
+
+        return $this->api;
+    }
+
+    /**
+     * @return Db
+     */
+    protected function directorDb()
+    {
+        if ($this->directorDb === null) {
+            // Hint: not using $this->Config() intentionally. This allows
+            // CLI commands in other modules to use this as a base class.
+            $resourceName = Config::module('director')->get('db', 'resource');
+            if ($resourceName) {
+                $this->directorDb = Db::fromResourceName($resourceName);
+            }
+        }
+
+        return $this->directorDb;
     }
 
     /**
