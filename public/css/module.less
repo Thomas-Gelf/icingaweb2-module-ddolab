@@ -117,3 +117,67 @@ table.state-table {
     border-bottom: 1px solid white !important;
   }
 }
+
+div.statesummary {
+  margin-bottom: 0.5em;
+  float: right;
+
+  ul {
+    list-style-type: none;
+    margin: 0 0.3em 0 0;
+    padding: 0;
+    display: inline;
+  }
+
+  li {
+    display: inline;
+
+    a {
+      color: white;
+      padding: 0.2em 0.5em;
+
+    }
+  }
+
+  li:nth-of-type(2) {
+    border-left: 1px solid white;
+  }
+
+  ul.up li {
+    background-color: @color-ok;
+  }
+  ul.down li {
+    background-color: @color-down;
+  }
+  ul.down li.handled {
+    background-color: @color-down-handled;
+  }
+  ul.unreachable li {
+    background-color: @color-unreachable;
+  }
+  ul.unreachable li.handled {
+    background-color: @color-unreachable-handled;
+  }
+  ul.unknown li {
+    background-color: @color-unknown;
+  }
+  ul.unknown li.handled {
+    background-color: @color-unknown-handled;
+  }
+  ul.pending li {
+    background-color: @color-pending;
+  }
+
+  li {
+
+  }
+  li:first-of-type {
+    border-bottom-left-radius: 0.4em;
+    border-top-left-radius: 0.4em;
+  }
+
+  li:last-of-type {
+    border-bottom-right-radius: 0.4em;
+    border-top-right-radius: 0.4em;
+  }
+}

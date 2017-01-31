@@ -35,6 +35,14 @@ abstract class StateObject extends DdoObject
         self::ICINGA_OK       => 0,
     );
 
+    protected static $hostStateNames = array(
+        self::ICINGA_UP          => 'up',
+        self::ICINGA_DOWN        => 'down',
+        self::ICINGA_UNREACHABLE => 'unreachable',
+        self::ICINGA_UNKNOWN     => 'unknown',
+        self::ICINGA_PENDING     => 'pending',
+    );
+
     protected static $stateTypes = array(
         'soft',
         'hard',
@@ -80,6 +88,13 @@ abstract class StateObject extends DdoObject
         if ($this->hasBeenModified()) {
             $this->last_update = time();
         }
+    }
+
+    public static function hostSeverityStateName($severity)
+    {
+        $states = array_flip(self::$hostStateSortMap);
+        $state = $states[$severity >> self::SHIFT_FLAGS];
+        return self::$hostStateNames[$state];
     }
 
     public function processDowntimeAdded($result, $timestamp)

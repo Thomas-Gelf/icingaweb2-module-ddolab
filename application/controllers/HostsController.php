@@ -40,8 +40,25 @@ class HostsController extends Controller
         $this->setAutorefreshInterval(1);
         $title = $this->translate('Hosts');
         $this->singleTab($title);
+        $this->controls()->add($this->createSummary());
         $this->addTitle($title);
         $this->content()->add($this->getHostsTable());
+    }
+
+    protected function createSummary()
+    {
+        $db = $this->ddo();
+        $summary = $db->fetchPairs(
+            $db->select()->from(
+                array('hs' => 'host_state'),
+                array(
+                    'severity' => 'hs.severity',
+                    'cnt' => 'COUNT(*)',
+                )
+            )->group('hs.severity')
+        );
+
+        return new HostStateSummary($summary);
     }
 
     protected function getHostsTable()
