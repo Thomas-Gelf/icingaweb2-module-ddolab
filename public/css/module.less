@@ -23,3 +23,97 @@ span.state span.relative-time {
   margin: 0;
   font-size: 0.833em;
 }
+
+table.state-table {
+  a:hover:before {
+    text-decoration: none;
+  }
+
+  td {
+    vertical-align: top;
+  }
+  p {
+    margin: 0;
+    padding: 0;
+  }
+
+  tr.active[href] {
+    border-left-color: transparent;
+  }
+
+  td:nth-child(2) {
+    width: 100%;
+    padding: 0.1em  1em;
+
+    a {
+      margin-right: 0.5em;
+    }
+
+    a:first-of-type {
+      font-weight: bold;
+    }
+
+    a:focus {
+      outline: none;
+
+    }
+  }
+
+  tr td:first-of-type {
+    padding: 0;
+  }
+
+  span.state {
+    display: block;
+    height: 3.5em;
+    padding-top: 0.3em;
+    text-align: center;
+    border-left: 0.5em solid transparent;
+    margin: 0;
+    padding-right: 0.5em;
+    width: 10em;
+/*
+    height: 100%;
+    overflow:auto;
+    -moz-box-sizing: border-box;
+*/
+  }
+
+  tr.unknown span.state {
+    border-color: @color-unknown;
+    background-color: @color-unknown;
+    color: white;
+  }
+
+  tr.unknown.handled span.state {
+    border-color: @color-unknown-handled;
+    background-color: @color-unknown-handled;
+    color: white;
+  }
+
+  tr.down span.state {
+    border-color: @color-down;
+    background-color: @color-down;
+    color: white;
+  }
+
+  tr.down.handled span.state {
+    border-color: @color-down-handled;
+    background-color: @color-down-handled;
+    color: white;
+  }
+
+  tr.pending span.state {
+    border-color: @color-pending;
+    background-color: @color-pending;
+    color: white;
+  }
+
+  tr.up span.state {
+    border-color: @color-ok;
+  }
+
+  tr td {
+    border-bottom: 1px solid white !important;
+  }
+}
