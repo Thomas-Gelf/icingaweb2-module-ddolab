@@ -38,6 +38,29 @@ class HostStateVolatile extends DdoObject
         return $this;
     }
 
+    public static function fromRedis(Client $redis, $checksum)
+    {
+        if (is_array($checksum)) {
+            $keys = array_map($checksum, 'HostStateVolatile::prefix');
+            $encoded = $redis->mget($keys);
+            return array_map($encoded, 'json_decode');
+        } else {
+            $res = json_decode(
+                $redis->get(HostStateVolatile::prefix($checksum))
+            );
+            if ($res) {
+                return static::create((array) $res);
+            } else {
+                return static::create(array());
+            }
+        }
+    }
+
+    public static function removeFromRedis(Client $redis, $checksum)
+    {
+        $redis->del(HostStateVolatile::prefix($checksum));
+    }
+
     protected static function prefix($key)
     {
         return HostStateVolatile::PREFIX . $key;
