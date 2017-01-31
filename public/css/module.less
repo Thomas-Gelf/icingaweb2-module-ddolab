@@ -1,0 +1,25 @@
+.action-bar a {
+  color: @icinga-blue;
+  margin-left: 1em;
+  &:hover:before {
+    text-decoration: none;
+  }
+}
+
+p.overview-plugin-output {
+  .preformatted();
+  min-height: 1.5em;
+  max-height: 4.5em;
+  overflow: hidden;
+}
+
+a.icon-reschedule.spin:before {
+  .animate(spin 1s infinite linear);
+}
+
+span.state span.relative-time {
+  display: block;
+  padding: 0;
+  margin: 0;
+  font-size: 0.833em;
+}
