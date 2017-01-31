@@ -40,7 +40,7 @@ class IcingaEventHandler
         $cntEvents = 0;
         $ddo = $this->ddo;
         $db = $this->db;
-        $list = new StateList($ddo);
+        $list = new StateList($ddo, $this->redis());
 
         // TODO: 0 is forever, leave loop after a few sec and enter again
         while (true) {
@@ -81,6 +81,53 @@ class IcingaEventHandler
                 $cntEvents = 0;
                 $this->closeTransaction();
             }
+
+            $this->checkForMissingObjects($list);
+        }
+    }
+
+    protected function checkForMissingObjects(StateList $list)
+    {
+        $db = $this->db;
+
+        $query = $db->select()->from(
+            array('h' => 'ddo_host'),
+            array(
+                'host'     => 'h.name',
+                'checksum' => 'h.checksum'
+            )
+        )->joinLeft(
+            array('hs' => 'host_state'),
+            'h.checksum = hs.checksum',
+            array()
+        )->where('hs.checksum IS NULL');
+        $missing = $db->fetchAll($query);
+
+        if (!empty($missing)) {
+            $this->wantsTransaction();
+
+            foreach ($missing as $row) {
+                $list->addPendingHost($row->host, $row->checksum);
+            }
+            $this->closeTransaction();
+        }
+
+        $query = $db->select()->from(
+            array('h' => 'ddo_host'),
+            array(
+                'checksum' => 'hs.checksum'
+            )
+        )->joinRight(
+            array('hs' => 'host_state'),
+            'h.checksum = hs.checksum',
+            array()
+        )->where('h.checksum IS NULL');
+        $obsolete = $db->fetchCol($query);
+
+        if (! empty($obsolete)) {
+            $this->wantsTransaction();
+            $list->removeHosts($obsolete);
+            $this->closeTransaction();
         }
     }
 

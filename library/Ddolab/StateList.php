@@ -112,6 +112,19 @@ class StateList
         $this->objects[$checksum] = $host;
     }
 
+    public function removeHosts($checksums)
+    {
+        foreach ($checksums as $checksum) {
+            HostStateVolatile::removeFromRedis($this->predis, $checksum);
+            unset($this->objects[$checksum]);
+        }
+
+        $this->db->delete(
+            'host_state',
+            $this->db->quoteInto('checksum in (?)', $checksums)
+        );
+    }
+
     protected function createObject($host, $service, $key)
     {
         if ($service === null) {
