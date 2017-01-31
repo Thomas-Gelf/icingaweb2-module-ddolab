@@ -22,8 +22,9 @@ class ConfigCommand extends Command
      */
     public function syncAction()
     {
+        cli_set_process_title('ddolab config sync');
         $sleepSeconds = (int) $this->params->get('sleep', 60);
-        $sync = new ObjectSync($this->api(), $this->ddo());
+        $sync = new ObjectSync($this->api(), $this->ddo(), $this->redis());
         $sync->syncForever($sleepSeconds);
     }
 }

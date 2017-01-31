@@ -10,14 +10,14 @@ class EventsCommand extends Command
 {
     public function processAction()
     {
-        cli_set_process_title('ddolab/process');
+        cli_set_process_title('ddolab events process');
         $handler = new IcingaEventHandler($this->ddo());
         $handler->processEvents();
     }
 
     public function streamAction()
     {
-        cli_set_process_title('ddolab/stream');
+        cli_set_process_title('ddolab events stream');
         $streamer = new IcingaEventToRedisStreamer($this->api());
         $streamer->stream();
     }
