@@ -9,6 +9,7 @@ use Icinga\Module\Ddolab\DdoDb;
 use Icinga\Module\Ddolab\HostGroup;
 use Icinga\Module\Ddolab\HostGroupMember;
 use Icinga\Module\Ddolab\HostObject;
+use Predis\Client;
 
 class ObjectSync
 {
@@ -24,11 +25,14 @@ class ObjectSync
 
     protected $activeHostGroups;
 
-    public function __construct(CoreApi $api, DdoDb $connection)
+    protected $predis;
+
+    public function __construct(CoreApi $api, DdoDb $connection, Client $predis)
     {
         $this->api = $api;
         $this->connection = $connection;
         $this->db = $connection->getDbAdapter();
+        $this->predis = $predis;
     }
 
     public function syncForever($sleepSeconds)
@@ -38,16 +42,39 @@ class ObjectSync
             $sleepSeconds
         );
 
+        $tryFast = 0;
         while (true) {
+            if ($tryFast !== false) {
+                $sleep = 1;
+                $tryFast++;
+                if ($tryFast > 10) {
+                    $tryFast = false;
+                }
+            } else {
+                $sleep = $sleepSeconds;
+            }
+
             try {
                 $this->syncAll();
+                $tryFast = false;
             } catch (Exception $e) {
                 Logger::error($e->getMessage());
+                if ($tryFast === false) {
+                    $tryFast = 0;
+                }
                 $this->clearConnections();
             }
 
-            sleep($sleepSeconds);
+            $this->predis->brpop('icinga::trigger::configchange', $sleepSeconds - 1);
+            $this->predis->del('icinga::trigger::configchange');
+            sleep(1);
+            $this->predis->del('icinga::trigger::configchange');
         }
+    }
+
+    protected function clearConnections()
+    {
+        // ??
     }
 
     public function syncAll()
@@ -60,11 +87,11 @@ class ObjectSync
         $loaded = microtime(true);
         $this->fetchActiveObjects();
         $fetched = microtime(true);
-        $this->syncHostGroups();
+        // $this->syncHostGroups();
         $this->syncHosts();
         $synched = microtime(true);
         $this->removeObsoleteHosts();
-        $this->removeObsoleteHostGroups();
+        // $this->removeObsoleteHostGroups();
         $removed = microtime(true);
 
         Logger::debug(
@@ -122,13 +149,13 @@ class ObjectSync
 
             if ($stored->hasBeenModified()) {
                 if ($stored->hasBeenLoadedFromDb()) {
-                    Logger::info(
+                    Logger::debug(
                         '(ddolab) %s "%s" has been modified',
                         $storedKey,
                         $stored->name
                     );
                 } else {
-                    Logger::info(
+                    Logger::debug(
                         '(ddolab) %s "%s" has been created',
                         $storedKey,
                         $stored->name
@@ -205,8 +232,9 @@ class ObjectSync
         $db->beginTransaction();
 
         try {
+            Logger::info('(ddolab) Creating %d %s', count($objects), $label);
             foreach ($objects as $object) {
-                Logger::info('(ddolab) Storing %s %s', $label, $object->name);
+                // Logger::info('(ddolab) Storing %s %s', $label, $object->name);
                 $object->store();
             }
 
