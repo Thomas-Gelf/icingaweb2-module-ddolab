@@ -20,19 +20,19 @@ abstract class StateObject extends DdoObject
     const ICINGA_PENDING     = 99;
 
     protected static $hostStateSortMap = array(
+        self::ICINGA_UP          => 0,
         self::ICINGA_PENDING     => 1,
+        self::ICINGA_UNKNOWN     => 2,
         self::ICINGA_UNREACHABLE => 4,
         self::ICINGA_DOWN        => 8,
-        self::ICINGA_UNKNOWN     => 2,
-        self::ICINGA_UP          => 0,
     );
 
     protected static $serviceStateSortMap = array(
+        self::ICINGA_OK       => 0,
         self::ICINGA_PENDING  => 1,
+        self::ICINGA_WARNING  => 2,
         self::ICINGA_UNKNOWN  => 4,
         self::ICINGA_CRITICAL => 8,
-        self::ICINGA_WARNING  => 2,
-        self::ICINGA_OK       => 0,
     );
 
     protected static $hostStateNames = array(
