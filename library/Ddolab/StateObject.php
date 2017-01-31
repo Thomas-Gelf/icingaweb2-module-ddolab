@@ -40,6 +40,8 @@ abstract class StateObject extends DdoObject
         'hard',
     );
 
+    protected $volatile;
+
     public function processCheckResult($result, $timestamp)
     {
         $vars = $result->vars_after;
@@ -58,10 +60,22 @@ abstract class StateObject extends DdoObject
         $this->check_source_checksum = sha1($result->check_source, true);
 
         // TODO: Handle those
-        $this->acknowledged = false;
-        $this->in_downtime  = false;
+        $this->severity = $this->calculateSeverity();
 
-        $this->severity   = $this->calculateSeverity();
+        $volatileKeys = array(
+            'command',
+            'execution_start',
+            'execution_end',
+            'schedule_start',
+            'schedule_end',
+            'exit_status',
+            'output',
+            'performance_data'
+        );
+        $this->volatile = array();
+        foreach ($volatileKeys as $key) {
+            $this->volatile[$key] = $result->$key;
+        }
 
         if ($this->hasBeenModified()) {
             $this->last_update = time();
