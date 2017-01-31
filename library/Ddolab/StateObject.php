@@ -88,14 +88,14 @@ abstract class StateObject extends DdoObject
 
     public function processAcknowledgementSet($result, $timestamp)
     {
-        $this->acknowledged = true;
-        $this->severity   = $this->calculateSeverity();
+        $this->set('acknowledged', true);
+        $this->set('severity', $this->calculateSeverity());
     }
 
     public function processAcknowledgementCleared($result, $timestamp)
     {
-        $this->acknowledged = false;
-        $this->severity   = $this->calculateSeverity();
+        $this->set('acknowledged', false);
+        $this->set('severity', $this->calculateSeverity());
     }
 
     public function setState_type($type)
@@ -143,13 +143,20 @@ abstract class StateObject extends DdoObject
     }
     */
 
+    public function recalculateSeverity()
+    {
+        $this->set('severity', $this->calculateSeverity());
+        return $this;
+    }
+
     protected function calculateSeverity()
     {
-        $sev = $this->getSortingState() << self::SHIFT_FLAGS
-            + ($this->isInDowntime() ? self::FLAG_DOWNTIME : 0)
-            + ($this->isAcknowledged() ? self::FLAG_ACK : 0);
-
-        if (! ($sev & (self::FLAG_DOWNTIME | self::FLAG_ACK))) {
+        $sev = $this->getSortingState() << self::SHIFT_FLAGS;
+        if ($this->isInDowntime()) {
+            $sev |= self::FLAG_DOWNTIME;
+        } elseif ($this->isAcknowledged()) {
+            $sev |= self::FLAG_ACK;
+        } else {
             $sev |= self::FLAG_NONE;
         }
 
