@@ -3,6 +3,7 @@
 namespace Icinga\Module\Ddolab;
 
 use Icinga\Exception\MissingParameterException;
+use Predis\Client;
 
 class StateList
 {
@@ -12,7 +13,9 @@ class StateList
 
     protected $objects = array();
 
-    public function __construct(DdoDb $connection)
+    protected $predis;
+
+    public function __construct(DdoDb $connection, Client $predis)
     {
         $this->connection = $connection;
         $this->db = $connection->getDbAdapter();
@@ -20,6 +23,7 @@ class StateList
             HostState::loadAll($this->connection, null, 'checksum'),
             ServiceState::loadAll($this->connection, null, 'checksum')
         );
+        $this->predis = $predis;
     }
 
     public function processCheckResult($result)
@@ -69,16 +73,43 @@ class StateList
             $object = $this->getObject($key);
         } else {
             $object = $this->createObject($host, $service, $key);
+            $this->objects[$key] = $object;
         }
-
-        $this->objects[$key] = $object;
 
         $method = 'process' . $type;
         if (method_exists($object, $method)) {
             $object->$method($eventData, $result->timestamp);
+        } elseif ($method !== 'processStateChange') {
+            // Hint: we completely ignore StateChange events
+            printf("Skipping %s\n", $method);
+        }
+
+        if ($object instanceof HostState) {
+            $object->getVolatile()->storeToRedis($this->predis);
         }
 
         return $object;
+    }
+
+    public function addPendingHost($name, $checksum)
+    {
+        $now = time();
+        $host = HostState::create(array(
+            'checksum'          => $checksum,
+            'host'              => $name,
+            'last_state_change' => $now,
+            'state'             => 99,
+            'hard_state'        => 99,
+            'attempt'           => 1,
+            'state_type'        => 'hard',
+            'last_update'       => $now,
+        ), $this->connection);
+
+        // Trigger severity calculation:
+        $host->recalculateSeverity();
+
+        $host->store();
+        $this->objects[$checksum] = $host;
     }
 
     protected function createObject($host, $service, $key)

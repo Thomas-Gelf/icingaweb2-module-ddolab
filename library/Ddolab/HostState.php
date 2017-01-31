@@ -39,6 +39,16 @@ class HostState extends StateObject
         'last_state_change',
     );
 
+    /**
+     * @return HostStateVolatile
+     */
+    public function getVolatile()
+    {
+        $props = $this->volatile;
+        $props['host_checksum'] = $this->get('checksum');
+        return HostStateVolatile::create($props);
+    }
+
     protected function getSortingState()
     {
         return self::$hostStateSortMap[$this->state];
