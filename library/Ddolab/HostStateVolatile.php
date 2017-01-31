@@ -38,6 +38,19 @@ class HostStateVolatile extends DdoObject
         return $this;
     }
 
+    public static function enrichRow($row)
+    {
+        if ((int) $row->state === 99) {
+            return;
+        }
+
+        if ($redis = static::$predis) {
+            foreach (static::fromRedis($redis, $row->checksum)->getProperties() as $key => $value) {
+                $row->$key = $value;
+            }
+        }
+    }
+
     public static function fromRedis(Client $redis, $checksum)
     {
         if (is_array($checksum)) {

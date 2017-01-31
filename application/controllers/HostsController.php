@@ -51,6 +51,7 @@ class HostsController extends Controller
         $view->addRowObserver('Icinga\\Module\\Ddolab\\HostStateVolatile::enrichRow');
         $view->addRowObserver(array($table, 'addHostLink'));
         $view->addRowObserver(array($table, 'renderStateColumn'));
+        HostStateVolatile::setRedis($this->redis());
         // $table->setCaption('Just a bunch of hosts');
         // $table->header();
         // $table->footer();
