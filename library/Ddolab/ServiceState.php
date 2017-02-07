@@ -21,8 +21,8 @@ class ServiceState extends StateObject
         'problem'               => null,
         'reachable'             => null,
         'severity'              => null,
-        'acknowledged'          => null,
-        'in_downtime'           => null,
+        'acknowledged'          => 'n',
+        'in_downtime'           => 'n',
         'last_update'           => null, // only on store if modified
         'last_state_change'     => null,
         'last_comment_checksum' => null,
