@@ -17,3 +17,9 @@ running what you need is:
 * PHP (&gt; 5.6.0)
 
 Director needs to be fully configured.
+
+Getting started
+---------------
+
+We need lot's of checks, please read how to get meaningful [random check results](
+doc/13-Random-Check-Results.md).
