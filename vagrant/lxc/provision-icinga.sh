@@ -3,7 +3,6 @@
 set -e
 
 apt-get update
-apt-get dist-upgrade -y
 
 apt-get install -y wget
 
@@ -16,7 +15,7 @@ EOF
 
 apt-get update
 
-apt-get install -y icinga2-bin icinga2-ido-mysql
+apt-get install -y icinga2-bin icinga2-ido-mysql icinga2
 
 icinga2 api setup
 
@@ -63,6 +62,35 @@ globals.addRandomHosts = function(num, tpl) {
   globals.desiredNum = num
   Internal.run_with_activation_context(globals.createRandomHosts)
 }
+
 EOF
 
-systemctl restart icinga2.service
+cat <<EOF >/etc/icinga2/features-available/ido-mysql.conf
+library "db_ido_mysql"
+
+object IdoMysqlConnection "ido-mysql" {
+  user = "icinga2",
+  password = "icinga2",
+  host = "mysql1.lxc",
+  database = "icinga2"
+}
+
+EOF
+
+cat <<EOF >>/etc/icinga2/conf.d/api-users.conf
+
+object ApiUser "icingaweb2" {
+  password = "icingaweb2"
+  permissions = [ "actions/*", "objects/modify/hosts", "objects/modify/services", "objects/modify/icingaapplication" ]
+}
+
+object ApiUser "director" {
+  password = "director"
+  permissions = [ "*" ]
+}
+
+EOF
+
+icinga2 feature enable ido-mysql
+
+systemctl restart icinga2
