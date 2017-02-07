@@ -3,7 +3,6 @@
 namespace Icinga\Module\Ddolab\Controllers;
 
 use Icinga\Module\Businessprocess\Html\Element;
-use Icinga\Module\Businessprocess\Html\Html;
 use Icinga\Module\Businessprocess\Html\HtmlTag;
 use Icinga\Module\Businessprocess\Html\Link;
 use Icinga\Module\Businessprocess\Web\Component\ActionBar;
@@ -40,6 +39,15 @@ class ControlController extends Controller
                 array('action' => 'reload'),
                 array(
                     'class' => 'icon-reschedule',
+                )
+            )
+        )->add(
+            Link::create(
+                $this->translate('Wipe'),
+                'ddolab/control',
+                array('action' => 'wipe'),
+                array(
+                    'class' => 'icon-remove',
                 )
             )
         );
@@ -85,6 +93,10 @@ class ControlController extends Controller
             } else {
                 Notification::warning(sprintf('Tried to reload, got "%s"', $result));
             }
+            $this->redis()->lpush('icinga::trigger::configchange', 'reload-from-web');
+            $this->redirectNow('ddolab/control');
+        } elseif ($this->params->get('action') === 'wipe') {
+            $this->api()->deleteModule('director');
             $this->redis()->lpush('icinga::trigger::configchange', 'reload-from-web');
             $this->redirectNow('ddolab/control');
         }
