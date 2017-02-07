@@ -65,6 +65,26 @@ class HostsController extends Controller
     {
         $table = new HostsTable();
         $view = new HostsView($this->ddo());
+
+        if ($state = $this->params->get('state')) {
+            $view->baseQuery()->where(
+                'state = ?',
+                StateObject::getStateForName($state)
+            );
+        }
+
+        if ($handled = $this->params->get('handled')) {
+            if ($handled === 'y') {
+                $view->baseQuery()
+                    ->where('acknowledged = ?', $handled)
+                    ->orWhere('in_downtime = ?', $handled);
+            } else {
+                $view->baseQuery()
+                    ->where('acknowledged = ?', $handled)
+                    ->where('in_downtime = ?', $handled);
+            }
+        }
+
         $view->addRowObserver('Icinga\\Module\\Ddolab\\HostStateVolatile::enrichRow');
         $view->addRowObserver(array($table, 'addHostLink'));
         $view->addRowObserver(array($table, 'renderStateColumn'));

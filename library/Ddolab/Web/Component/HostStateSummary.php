@@ -42,18 +42,27 @@ class HostStateSummary extends BaseElement
                     Element::create('li')->setContent(
                         Link::create(
                             $counts['unhandled'],
-                            '#'
+                            'ddolab/hosts',
+                            array(
+                                'state'   => $stateName,
+                                'handled' => 'n'
+                            )
                         )
                     )
                 );
             }
+
             if (array_key_exists('handled', $counts)) {
                 $ul->add(
                     Element::create('li', array('class' => 'handled'))
                         ->setContent(
                             Link::create(
                                 $counts['handled'],
-                                '#'
+                                'ddolab/hosts',
+                                array(
+                                    'state'   => $stateName,
+                                    'handled' => 'y'
+                                )
                             )
                         )
                 );
