@@ -76,7 +76,7 @@ class ControlController extends Controller
         );
 
         if ($add = (int) $this->params->get('add')) {
-            $template = $this->params->get('template', 'dummy-host');
+            $template = $this->params->get('template', 'Random Fortune');
             $this->api()->runConsoleCommand(
                 sprintf('addRandomHosts(%d, "%s")', $add, $template)
             );
