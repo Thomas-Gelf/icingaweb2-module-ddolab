@@ -35,6 +35,17 @@ abstract class StateObject extends DdoObject
         self::ICINGA_WARNING     => 0,
     );
 
+    // Reversing the above:
+    protected static $hostSortStateMap = array(
+        0 => self::ICINGA_UP,
+        1 => self::ICINGA_PENDING,
+        8 => self::ICINGA_DOWN,
+
+        // TODO: these do currently not exist:
+        2 => self::ICINGA_UNREACHABLE,
+        4 => self::ICINGA_UNKNOWN,
+    );
+
     protected static $serviceStateSortMap = array(
         self::ICINGA_OK       => 0,
         self::ICINGA_PENDING  => 1,
@@ -43,12 +54,31 @@ abstract class StateObject extends DdoObject
         self::ICINGA_CRITICAL => 8,
     );
 
+    protected static $serviceSortStateMap = array(
+        0 => self::ICINGA_OK,
+        1 => self::ICINGA_PENDING,
+        2 => self::ICINGA_WARNING,
+        4 => self::ICINGA_UNKNOWN,
+        8 => self::ICINGA_CRITICAL,
+    );
+
     protected static $hostStateNames = array(
         self::ICINGA_UP          => 'up',
         self::ICINGA_DOWN        => 'down',
         self::ICINGA_UNREACHABLE => 'unreachable',
         self::ICINGA_UNKNOWN     => 'unknown',
         self::ICINGA_PENDING     => 'pending',
+    );
+
+    protected static $namesToState = array(
+        'up'          => self::ICINGA_UP,
+        'ok'          => self::ICINGA_OK,
+        'down'        => self::ICINGA_DOWN,
+        'unreachable' => self::ICINGA_UNREACHABLE,
+        'warning'     => self::ICINGA_WARNING,
+        'critical'    => self::ICINGA_CRITICAL,
+        'unknown'     => self::ICINGA_UNKNOWN,
+        'pending'     => self::ICINGA_PENDING,
     );
 
     protected static $stateTypes = array(
@@ -96,6 +126,11 @@ abstract class StateObject extends DdoObject
         if ($this->hasBeenModified()) {
             $this->last_update = time();
         }
+    }
+
+    public static function getStateForName($name)
+    {
+        return self::$namesToState[$name];
     }
 
     public static function hostSeverityStateName($severity)
