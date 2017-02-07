@@ -103,6 +103,18 @@ table.state-table {
     color: white;
   }
 
+  tr.unreachable span.state {
+    border-color: @color-unreachable;
+    background-color: @color-unreachable;
+    color: white;
+  }
+
+  tr.unreachable.handled span.state {
+    border-color: @color-unreachable-handled;
+    background-color: @color-unreachable-handled;
+    color: white;
+  }
+
   tr.pending span.state {
     border-color: @color-pending;
     background-color: @color-pending;

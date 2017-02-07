@@ -10,20 +10,20 @@ use Icinga\Module\Ddolab\Web\Component\Table;
 class HostsTable extends Table
 {
     protected $stateClasses = array(
-        'up',
-        'down', // warning?!
-        'down',
-        'unknown',
-        // what about 99/pending?
+        0 => 'up',
+        1 => 'up', // TODO: get rid of this
+        2 => 'down',
+        3 => 'unreachable', // nay
+        // 'unknown',
         99 => 'pending',
     );
 
     protected $stateNames = array(
-        'UP',
-        'DOWN', // warning?!
-        'DOWN',
+        0 => 'UP',
+        1 => 'UP', // TODO: get rid of this
+        2 => 'DOWN',
+        'UNREACHABLE',
         'UNKNOWN',
-        // what about 99/pending?
         99 => 'PENDING',
     );
 
