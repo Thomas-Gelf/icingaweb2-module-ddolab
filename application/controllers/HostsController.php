@@ -2,7 +2,9 @@
 
 namespace Icinga\Module\Ddolab\Controllers;
 
+use Exception;
 use Icinga\Module\Ddolab\HostStateVolatile;
+use Icinga\Module\Ddolab\StateObject;
 use Icinga\Module\Ddolab\View\HostsView;
 use Icinga\Module\Ddolab\Web\Component\HostStateSummary;
 use Icinga\Module\Ddolab\Web\Controller;
@@ -16,20 +18,41 @@ class HostsController extends Controller
         $action = $this->params->shift('action');
         $hostname = $this->params->get('host');
         if ($action === 'checkNow') {
-            $res = $this->api()->checkHostAndWaitForResult($hostname, 2);
-            if ($res === false) {
-                Notification::warning('Scheduled a new check, got no new result yet');
+            try {
+                $res = $this->api()->checkHostAndWaitForResult($hostname, 2);
+                if ($res === false) {
+                    Notification::warning('Scheduled a new check, got no new result yet');
+                }
+            } catch (Exception $e) {
+                Notification::error(sprintf(
+                    'Rescheduling the check failed: %s',
+                    $e->getMessage()
+                ));
             }
 
             $this->redirectNow('ddolab/hosts');
         } elseif ($action === 'ack') {
-            $this->api()->acknowledgeHostProblem(
-                $hostname,
-                $this->Auth()->getUser()->getUsername(),
-                "I'm working on this"
-            );
+            try {
+                $this->api()->acknowledgeHostProblem(
+                    $hostname,
+                    $this->Auth()->getUser()->getUsername(),
+                    "I'm working on this"
+                );
+            } catch (Exception $e) {
+                Notification::error(sprintf(
+                    'Acknowledging the problem failed: %s',
+                    $e->getMessage()
+                ));
+            }
         } elseif ($action === 'removeAck') {
-            $this->api()->removeHostAcknowledgement($hostname);
+            try {
+                $this->api()->removeHostAcknowledgement($hostname);
+            } catch (Exception $e) {
+                Notification::error(sprintf(
+                    'Failed to remove this acknowledgement: %s',
+                    $e->getMessage()
+                ));
+            }
         }
 
         if ($action) {
@@ -37,7 +60,7 @@ class HostsController extends Controller
             $this->redirectNow('ddolab/hosts');
         }
 
-        $this->setAutorefreshInterval(1);
+        $this->setAutorefreshInterval(10);
         $title = $this->translate('Hosts');
         $this->singleTab($title);
         $this->controls()->add($this->createSummary());
