@@ -15,16 +15,24 @@ abstract class StateObject extends DdoObject
     const ICINGA_CRITICAL    = 2;
     const ICINGA_UNKNOWN     = 3;
     const ICINGA_UP          = 0;
-    const ICINGA_DOWN        = 1;
-    const ICINGA_UNREACHABLE = 2;
+    const ICINGA_DOWN        = 2;
+    const ICINGA_UNREACHABLE = 3; // TODO: re-think "reachable"
     const ICINGA_PENDING     = 99;
 
     protected static $hostStateSortMap = array(
         self::ICINGA_UP          => 0,
         self::ICINGA_PENDING     => 1,
-        self::ICINGA_UNKNOWN     => 2,
-        self::ICINGA_UNREACHABLE => 4,
+
+        self::ICINGA_UNKNOWN     => 8,
         self::ICINGA_DOWN        => 8,
+
+        // Hint: exit code 3 is mapped to down, "unreachable" needs to be calculated.
+        // TODO: let "reachable" flow into severity and state calculation
+        self::ICINGA_UNREACHABLE => 8,
+
+        // Hint: exit code 1 is OK for Icinga 2.
+        // Fits Icinga 1.x unless aggressive_host_checking is set
+        self::ICINGA_WARNING     => 0,
     );
 
     protected static $serviceStateSortMap = array(
@@ -92,8 +100,7 @@ abstract class StateObject extends DdoObject
 
     public static function hostSeverityStateName($severity)
     {
-        $states = array_flip(self::$hostStateSortMap);
-        $state = $states[$severity >> self::SHIFT_FLAGS];
+        $state = self::$hostSortStateMap[$severity >> self::SHIFT_FLAGS];
         return self::$hostStateNames[$state];
     }
 
