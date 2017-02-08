@@ -6,7 +6,7 @@ use Predis\Client;
 
 class HostStateVolatile extends DdoObject
 {
-    const PREFIX = 'IcingaHostStateVolatile::';
+    const PREFIX = 'icinga2::hoststate.';
 
     protected $table = 'host_state_volatile';
 
@@ -34,7 +34,10 @@ class HostStateVolatile extends DdoObject
 
     public function storeToRedis(Client $redis)
     {
-        $redis->set(static::prefix($this->get('host_checksum')), $this->toJson());
+        $key = static::prefix($this->get('host_checksum'));
+        $redis->set($key, $this->toJson());
+        // TODO: expire in check_interval * attempts + timeout + some more seconds
+        $redis->expire($key, 600);
         return $this;
     }
 
