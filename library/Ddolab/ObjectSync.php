@@ -175,6 +175,8 @@ class ObjectSync
         $db = $this->connection;
 
         $this->activeHosts = array();
+        $this->activeHostGroupMembers = array();
+
         foreach ($objects as $name => $object) {
             $ddoObject = HostObject::fromApiObject($name, $object, $db);
             $this->activeHosts[$ddoObject->checksum] = $ddoObject;
