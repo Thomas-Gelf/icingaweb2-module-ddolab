@@ -235,3 +235,10 @@ if [ ! -d /var/lib/lxc/icinga1.lxc/ ]; then
     echo "Installing unit file..."
     unitfile "icinga1.lxc" "enable"
 fi
+
+
+# portforwarding for redis outside of vagrant
+iptables -t nat -A PREROUTING -p tcp --dport 6379 -j DNAT --to-destination 10.0.3.12:6379
+
+# install redis-cli locally
+apt-get install redis-tools
