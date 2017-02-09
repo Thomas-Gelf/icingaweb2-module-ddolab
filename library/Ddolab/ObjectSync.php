@@ -21,9 +21,13 @@ class ObjectSync
 
     protected $storedHostGroups;
 
+    protected $storedHostGroupMembers;
+
     protected $activeHosts;
 
     protected $activeHostGroups;
+
+    protected $activeHostGroupMembers;
 
     protected $predis;
 
@@ -58,7 +62,7 @@ class ObjectSync
                 $this->syncAll();
                 $tryFast = false;
             } catch (Exception $e) {
-                Logger::error($e->getMessage());
+                Logger::error($e->getMessage() . "\n" . $e->getTraceAsString());
                 if ($tryFast === false) {
                     $tryFast = 0;
                 }
@@ -87,15 +91,17 @@ class ObjectSync
         $loaded = microtime(true);
         $this->fetchActiveObjects();
         $fetched = microtime(true);
-        // $this->syncHostGroups();
+        $this->syncHostGroups();
         $this->syncHosts();
+        $this->syncHostGroupMembers();
         $synched = microtime(true);
         $this->removeObsoleteHosts();
-        // $this->removeObsoleteHostGroups();
+        $this->removeObsoleteHostGroups();
+        $this->removeObsoleteHostGroupMembers();
         $removed = microtime(true);
 
         Logger::debug(
-            '(ddolab) Sync done, spend %.2Fms fetching objects from db, %.2Fms'
+            '(ddolab) Sync done, spent %.2Fms fetching objects from db, %.2Fms'
             . ' fetching from Icinga 2 API, %.2Fms on sync and %.2Fms to remove'
             . ' obsolete objects from DB',
             ($loaded - $start) * 1000,
@@ -103,25 +109,6 @@ class ObjectSync
             ($synched - $fetched) * 1000,
             ($removed - $synched) * 1000
         );
-/*
-        foreach ($apiHost->attrs->groups as $hostGroup) {
-            $member = HostGroupMember::create(
-                array(
-                    'host_group_checksum'   => hex2bin(sha1($hostGroup)),
-                    'host_checksum'         => $ddoHost->checksum
-                ),
-                $db
-            );
-            try {
-                // Brute force atm
-                $member->store();
-                Logger::debug('Updating host group memberships for host %s', $name);
-            } catch (Exception $e) {
-                // TODO(el): Member cleanup
-                continue;
-            }
-        }
-*/
     }
 
     protected function syncHosts()
@@ -132,6 +119,11 @@ class ObjectSync
     protected function syncHostGroups()
     {
         $this->syncObjects('HostGroup');
+    }
+
+    protected function syncHostGroupMembers()
+    {
+        $this->syncObjects('HostGroupMember');
     }
 
     protected function syncObjects($key)
@@ -152,13 +144,13 @@ class ObjectSync
                     Logger::debug(
                         '(ddolab) %s "%s" has been modified',
                         $storedKey,
-                        $stored->name
+                        $stored->hasProperty('name') ? $stored->name : 'No name'
                     );
                 } else {
                     Logger::debug(
                         '(ddolab) %s "%s" has been created',
                         $storedKey,
-                        $stored->name
+                        $stored->hasProperty('name') ? $stored->name : 'No name'
                     );
                 }
 
@@ -173,6 +165,7 @@ class ObjectSync
     protected function fetchActiveObjects()
     {
         $this->fetchActiveHosts();
+        // Host group members are fetched in fetchActiveHosts()
         $this->fetchActiveHostGroups();
     }
 
@@ -185,9 +178,21 @@ class ObjectSync
         foreach ($objects as $name => $object) {
             $ddoObject = HostObject::fromApiObject($name, $object, $db);
             $this->activeHosts[$ddoObject->checksum] = $ddoObject;
+
+            foreach ($object->attrs->groups as $hostGroup) {
+                $member = HostGroupMember::create(
+                    array(
+                        'host_group_checksum'   => hex2bin(sha1($hostGroup)),
+                        'host_checksum'         => $ddoObject->checksum
+                    ),
+                    $db
+                );
+                $this->activeHostGroupMembers[$member->host_group_checksum . $member->host_checksum] = $member;
+            }
         }
 
         ksort($this->activeHosts);
+        ksort($this->activeHostGroupMembers);
     }
 
     protected function fetchActiveHostGroups()
@@ -208,6 +213,7 @@ class ObjectSync
     {
         $this->loadStoredHosts();
         $this->loadStoredHostGroups();
+        $this->loadStoreHostgroupMembers();
     }
 
     protected function loadStoredHosts()
@@ -220,6 +226,15 @@ class ObjectSync
     {
         $this->storedHostGroups = HostGroup::loadAll($this->connection, null, 'checksum');
         ksort($this->storedHostGroups);
+    }
+
+    protected function loadStoreHostgroupMembers()
+    {
+        $storedHostGroupMembers = array();
+        foreach (HostGroupMember::loadAll($this->connection) as $hostGroupMember) {
+            $storedHostGroupMembers[$hostGroupMember->host_group_checksum . $hostGroupMember->host_checksum] = $hostGroupMember;
+        }
+        $this->storedHostGroupMembers = $storedHostGroupMembers;
     }
 
     protected function storeModifiedObjects($label, $objects)
@@ -259,6 +274,11 @@ class ObjectSync
     protected function removeObsoleteHostGroups()
     {
         $this->removeObsoleteObjects('HostGroup', 'ddo_host_group');
+    }
+
+    protected function removeObsoleteHostGroupMembers()
+    {
+        $this->removeObsoleteObjects('HostGroupMember', 'ddo_host_group_member');
     }
 
     protected function removeObsoleteObjects($key, $table)
