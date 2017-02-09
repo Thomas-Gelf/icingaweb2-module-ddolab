@@ -46,7 +46,7 @@ class IcingaEventHandler
         while (true) {
             $redis = $this->redis();
 
-            while ($res = $redis->brpop('icinga2::events', 1)) {
+            while ($res = $redis->brpop('icinga:events', 1)) {
                 $cntEvents++;
                 // Hint: $res = array(queuename, value)
                 $object = $list->processCheckResult(json_decode($res[1]));

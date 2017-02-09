@@ -21,7 +21,7 @@ class TroubleshootCommand extends Command
         // TODO: 0 is forever, leave loop after a few sec and enter again
         while (true) {
 
-            while ($res = $redis->brpop('icinga2::events', 3)) {
+            while ($res = $redis->brpop('icinga:events', 3)) {
                 $cnt++;
                 if (! $hasTransaction) {
                     $db->beginTransaction();

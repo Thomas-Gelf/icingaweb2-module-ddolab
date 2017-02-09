@@ -46,7 +46,7 @@ class IcingaEventToRedisStreamer
     {
         while (true) {
             try {
-                $id = $this->redis()->lpush('icinga2::events', $event);
+                $id = $this->redis()->lpush('icinga:events', $event);
                 Logger::debug('(ddolab) Stored id %d', $id);
                 return;
             } catch (Exception $e) {
