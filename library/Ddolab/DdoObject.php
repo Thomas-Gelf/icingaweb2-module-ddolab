@@ -2,12 +2,6 @@
 
 namespace Icinga\Module\Ddolab;
 
-if (version_compare(PHP_VERSION, '5.4.0') <= 0) {
-    function hex2bin($hex) {
-        return pack('H*', $hex);
-    }
-}
-
 use Icinga\Module\Director\Data\Db\DbObject;
 use Icinga\Exception\ProgrammingError;
 use Icinga\Util\StringHelper;

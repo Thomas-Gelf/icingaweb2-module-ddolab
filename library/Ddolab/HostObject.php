@@ -147,4 +147,3 @@ class HostObject extends DdoObject
         return $this->reallySet('address6_bin', $value);
     }
 }
-
