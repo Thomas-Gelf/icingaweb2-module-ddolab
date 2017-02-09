@@ -23,3 +23,5 @@ Getting started
 
 We need lot's of checks, please read how to get meaningful [random check results](
 doc/13-Random-Check-Results.md).
+
+The [Vagrant Box](doc/12-vagrant-box.md) helps getting started more easily.
