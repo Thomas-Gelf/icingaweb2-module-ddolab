@@ -2,6 +2,8 @@
 
 namespace Icinga\Module\Ddolab;
 
+use Icinga\Exception\ProgrammingError;
+
 class HostState extends StateObject
 {
     protected $table = 'host_state';
@@ -38,6 +40,16 @@ class HostState extends StateObject
         'last_update',
         'last_state_change',
     );
+
+    public function getStateName()
+    {
+        $state = $this->get('state');
+        if ($state === null) {
+            throw new ProgrammingError('Got no state yet');
+        }
+
+        return self::$hostStateNames[$state];
+    }
 
     /**
      * @return HostStateVolatile
