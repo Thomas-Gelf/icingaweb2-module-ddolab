@@ -6,7 +6,7 @@ use Exception;
 use Icinga\Module\Ddolab\HostStateVolatile;
 use Icinga\Module\Ddolab\StateObject;
 use Icinga\Module\Ddolab\View\HostsView;
-use Icinga\Module\Ddolab\Web\Component\HostStateSummary;
+use Icinga\Module\Ddolab\Web\Component\HostStateSummaryBadges;
 use Icinga\Module\Ddolab\Web\Controller;
 use Icinga\Module\Ddolab\Web\HostsTable;
 use Icinga\Web\Notification;
@@ -81,7 +81,7 @@ class HostsController extends Controller
             )->group('hs.severity')
         );
 
-        return new HostStateSummary($summary);
+        return new HostStateSummaryBadges($summary);
     }
 
     protected function getHostsTable()
