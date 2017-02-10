@@ -11,6 +11,7 @@ abstract class ListView
 
     private $db;
 
+    /** @var \Zend_Db_Select */
     private $baseQuery;
 
     /** @var callable[] */
@@ -68,6 +69,9 @@ abstract class ListView
         // return $this->
     }
 
+    /**
+     * @return \Zend_Db_Select
+     */
     public function baseQuery()
     {
         if ($this->baseQuery === null) {
