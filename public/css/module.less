@@ -1,6 +1,6 @@
 .action-bar a {
   color: @icinga-blue;
-  margin-left: 1em;
+  margin-right: 1em;
   &:hover:before {
     text-decoration: none;
   }
@@ -191,5 +191,84 @@ div.statesummary {
   li:last-of-type {
     border-bottom-right-radius: 0.4em;
     border-top-right-radius: 0.4em;
+  }
+}
+
+span.state {
+  display: inline-block;
+  height: 3.5em;
+  padding-top: 0.3em;
+  text-align: center;
+  border-left: 0.5em solid transparent;
+  margin: 0;
+  padding-right: 0.5em;
+  width: 10em;
+
+  &.unknown {
+    border-color: @color-unknown;
+    background-color: @color-unknown;
+    color: white;
+  }
+
+  &.unknown.handled {
+    border-color: @color-unknown-handled;
+    background-color: @color-unknown-handled;
+    color: white;
+  }
+
+  &.down {
+    border-color: @color-down;
+    background-color: @color-down;
+    color: white;
+  }
+
+  &.down.handled {
+    border-color: @color-down-handled;
+    background-color: @color-down-handled;
+    color: white;
+  }
+
+  &.unreachable {
+    border-color: @color-unreachable;
+    background-color: @color-unreachable;
+    color: white;
+  }
+
+  &.unreachable.handled {
+    border-color: @color-unreachable-handled;
+    background-color: @color-unreachable-handled;
+    color: white;
+  }
+
+  &.pending {
+    border-color: @color-pending;
+    background-color: @color-pending;
+    color: white;
+  }
+
+  &.up {
+    border-color: @color-ok;
+  }
+}
+
+.object-header {
+  h1 {
+    display: block;
+    min-width: 20em;
+    font-size: 1em;
+    vertical-align: top;
+    border-bottom: none;
+    margin: 0;
+  }
+
+  span.state {
+    height: 3.8em;
+    vertical-align: top;
+    width: 8em;
+  }
+
+  > .header-details {
+    padding-left: 0.5em;
+    display: inline-block;
   }
 }

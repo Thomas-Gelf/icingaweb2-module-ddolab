@@ -66,6 +66,13 @@ class HostsTable extends Table
     {
         $hostname = $row->host;
         $row->host = array();
+
+        $row->host[] = Link::create(
+            $hostname,
+            'ddolab/host/show',
+            array('name' => $hostname)
+        );
+/*
         if (strpos($hostname, 'random') === false) {
             $row->host[] = Link::create(
                 $hostname,
@@ -83,6 +90,7 @@ class HostsTable extends Table
                 )
             );
         }
+*/
         $this->addRescheduleLink($row, $hostname);
         $this->addAckLink($row, $hostname);
 
