@@ -4,6 +4,7 @@ namespace Icinga\Module\Ddolab\Web\Component;
 
 use Icinga\Module\Businessprocess\Html\BaseElement;
 use Icinga\Module\Businessprocess\Html\Element;
+use Traversable;
 
 class Table extends BaseElement
 {
@@ -107,7 +108,7 @@ class Table extends BaseElement
         return $this->body;
     }
 
-    public function renderRows(\Traversable $rows)
+    public function renderRows(Traversable $rows)
     {
         $body = $this->body();
         foreach ($rows as $row) {
