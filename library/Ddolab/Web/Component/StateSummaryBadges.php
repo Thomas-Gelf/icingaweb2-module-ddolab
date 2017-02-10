@@ -6,6 +6,7 @@ use Icinga\Exception\ProgrammingError;
 use Icinga\Module\Businessprocess\Html\BaseElement;
 use Icinga\Module\Businessprocess\Html\Element;
 use Icinga\Module\Businessprocess\Html\Link;
+use Icinga\Module\Ddolab\Db\StateSummary\StateSummary;
 use Icinga\Module\Ddolab\StateObject;
 
 abstract class StateSummaryBadges extends BaseElement
@@ -23,7 +24,7 @@ abstract class StateSummaryBadges extends BaseElement
     /** @var string */
     protected $baseUrl;
 
-    public function __construct($states)
+    public function __construct(StateSummary $states)
     {
         $inUse = array();
         foreach ($states->fetch() as $state => $count) {

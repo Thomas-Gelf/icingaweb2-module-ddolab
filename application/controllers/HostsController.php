@@ -3,6 +3,7 @@
 namespace Icinga\Module\Ddolab\Controllers;
 
 use Exception;
+use Icinga\Module\Ddolab\Db\StateSummary\HostStateSummary;
 use Icinga\Module\Ddolab\HostStateVolatile;
 use Icinga\Module\Ddolab\StateObject;
 use Icinga\Module\Ddolab\View\HostsView;
@@ -63,25 +64,11 @@ class HostsController extends Controller
         $this->setAutorefreshInterval(10);
         $title = $this->translate('Hosts');
         $this->singleTab($title);
-        $this->controls()->add($this->createSummary());
+        $this->controls()->add(
+            new HostStateSummaryBadges(HostStateSummary::fromDb($this->ddo()))
+        );
         $this->addTitle($title);
         $this->content()->add($this->getHostsTable());
-    }
-
-    protected function createSummary()
-    {
-        $db = $this->ddo();
-        $summary = $db->fetchPairs(
-            $db->select()->from(
-                array('hs' => 'host_state'),
-                array(
-                    'severity' => 'hs.severity',
-                    'cnt' => 'COUNT(*)',
-                )
-            )->group('hs.severity')
-        );
-
-        return new HostStateSummaryBadges($summary);
     }
 
     protected function getHostsTable()
