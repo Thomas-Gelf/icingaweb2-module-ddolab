@@ -129,7 +129,7 @@ class HostsTable extends Table
                 'host'   => $hostname,
             ),
             array(
-                'class' => 'icon-reschedule',
+                'class' => 'icon-edit',
                 'data-base-target' => '_self',
             )
         );
