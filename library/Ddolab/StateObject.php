@@ -234,12 +234,17 @@ abstract class StateObject extends DdoObject
         return $sev;
     }
 
-    protected function isInDowntime()
+    public function isProblem()
+    {
+        return $this->get('problem') === 'y';
+    }
+
+    public function isInDowntime()
     {
         return $this->get('in_downtime') === 'y';
     }
 
-    protected function isAcknowledged()
+    public function isAcknowledged()
     {
         return $this->get('acknowledged') === 'y';
     }
